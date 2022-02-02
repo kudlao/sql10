@@ -1,0 +1,23 @@
+SELECT yymm,sumc,lastn FROM(
+  (SELECT sum(o.ORDER_TOTAL) AS sumc,to_char(o.ORDER_DATE,'YYYYMM') AS yymm
+  FROM oe.ORDERS o 
+  WHERE extract(YEAR FROM (o.ORDER_DATE))='2007'
+  GROUP BY to_char(o.ORDER_DATE,'YYYYMM')) a
+INNER join
+  (SELECT lastn,ym FROM (
+    SELECT max(o.ORDER_TOTAL) AS maxx,to_char(o.ORDER_DATE,'YYYYMM') as ym
+    FROM hr.EMPLOYEES e 
+    INNER JOIN
+    oe.ORDERS o  
+    ON e.EMPLOYEE_ID =o.SALES_REP_ID 
+    WHERE EXTRACT( YEAR FROM o.ORDER_DATE) ='2007' 
+    GROUP BY to_char(o.ORDER_DATE,'YYYYMM')) f 
+  INNER JOIN 
+   (SELECT max(o.ORDER_TOTAL) AS maxx1,
+    to_char(o.ORDER_DATE,'YYYYMM'),e.LAST_NAME as lastn
+    FROM hr.EMPLOYEES e INNER JOIN oe.ORDERS o  
+    ON e.EMPLOYEE_ID =o.SALES_REP_ID 
+    WHERE EXTRACT( YEAR FROM o.ORDER_DATE) ='2007' 
+    GROUP BY to_char(o.ORDER_DATE,'YYYYMM'),e.LAST_NAME) h
+  ON f.maxx=h.maxx1  ) b
+ON a.yymm=b.ym)
